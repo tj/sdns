@@ -1,6 +1,6 @@
 package server
 
-import "github.com/tj/anydns/config"
+import "github.com/tj/sdns/config"
 import "github.com/miekg/dns"
 import "encoding/json"
 import "os/exec"

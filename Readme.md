@@ -1,5 +1,5 @@
 
-# anydns
+# sdns
 
  Little nameserver resolving via arbitrary command(s).
 
@@ -10,7 +10,7 @@
  Run with config:
 
 ```
-$ anydns < domains.yml
+$ sdns < domains.yml
 ```
 
  Configuration example:

@@ -1,7 +1,7 @@
 package main
 
-import "github.com/tj/anydns/server"
-import "github.com/tj/anydns/config"
+import "github.com/tj/sdns/server"
+import "github.com/tj/sdns/config"
 import "github.com/tj/go-gracefully"
 import "github.com/tj/docopt"
 import "log"
@@ -11,9 +11,9 @@ var Version = "0.0.1"
 
 const Usage = `
   Usage:
-    anydns
-    anydns -h | --help
-    anydns --version
+    sdns
+    sdns -h | --help
+    sdns --version
 
   Options:
     -h, --help       output help information
@@ -34,7 +34,7 @@ func main() {
 
 	s := server.New(c)
 
-	log.Printf("[info] starting anydns %s", Version)
+	log.Printf("[info] starting sdns %s", Version)
 	err = s.Start()
 	if err != nil {
 		log.Fatalf("[error] %s", err)
