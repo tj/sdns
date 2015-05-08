@@ -5,6 +5,14 @@
 
  __Warning__: This is a work-in-progress, you have been warned!
 
+## Installation
+
+ Via binary [releases](https://github.com/tj/sdns/releases) or:
+
+```
+$ go get github.com/tj/sdns
+```
+
 ## Usage
 
  Run with config:
