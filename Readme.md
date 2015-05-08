@@ -35,6 +35,22 @@ domains:
       echo 'something goes boom' && exit 1
 ```
 
+ Dig it:
+
+```
+$ dig @127.0.0.1 -p 5000 something.foo +short
+1.1.1.1
+
+$ dig @127.0.0.1 -p 5000 something.bar +short
+1.1.1.2
+
+$ dig @127.0.0.1 -p 5000 something.foo.bar +short
+1.1.1.3
+
+$ dig @127.0.0.1 -p 5000 segment.com +short
+54.213.169.105
+```
+
 # License
 
  MIT
