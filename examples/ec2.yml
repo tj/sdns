@@ -1,0 +1,9 @@
+bind: ":5000"
+upstream:
+  - 8.8.8.8
+  - 8.8.4.4
+domains:
+  - name: ec2.local.
+    command: sdns-ec2 $1
+  - name: ec2.
+    command: sdns-ec2 $1

@@ -10,7 +10,7 @@
  Via binary [releases](https://github.com/tj/sdns/releases) or:
 
 ```
-$ go get github.com/tj/sdns
+$ go get github.com/tj/sdns/cmd/sdns
 ```
 
 ## Usage
@@ -58,6 +58,10 @@ $ dig @127.0.0.1 -p 5000 something.foo.bar +short
 $ dig @127.0.0.1 -p 5000 segment.com +short
 54.213.169.105
 ```
+
+## Resolvers
+
+ - [sdns-ec2](https://github.com/tj/sdns-ec2): resolves AWS EC2 hosts via the Name tag
 
 # License
 

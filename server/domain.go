@@ -2,34 +2,29 @@ package server
 
 import "github.com/tj/sdns/config"
 import "github.com/miekg/dns"
+import "github.com/tj/sdns"
 import "encoding/json"
+import "strings"
 import "os/exec"
+import "bytes"
 import "time"
 import "log"
-import "net"
 import "fmt"
-
-// Command result.
-type result struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
-	TTL   uint32 `json:"ttl"`
-}
-
-// String representation.
-func (r *result) String() string {
-	return fmt.Sprintf("type=%s value=%q ttl=%d", r.Type, r.Value, r.TTL)
-}
 
 // Domain resolver.
 type Domain struct {
 	*config.Domain
 }
 
+// Strip suffix from the domain, for example "api-02.ec2." becomes "api-02".
+func (d *Domain) strip(name string) string {
+	return strings.Replace(name, "."+d.Name, "", 1)
+}
+
 // ServeDNS resolution.
 func (d *Domain) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	for _, q := range r.Question {
-		log.Printf("[%v] <== %s %s %v\n", r.Id,
+		log.Printf("[info] [%v] <-- %s %s %v\n", r.Id,
 			dns.ClassToString[q.Qclass],
 			dns.TypeToString[q.Qtype],
 			q.Name)
@@ -44,42 +39,41 @@ func (d *Domain) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	start := time.Now()
-	result, err := d.exec()
+	answers, err := d.resolve(&r.Question[0])
 	if err != nil {
-		log.Printf("[error] executing command: %s", err)
+		log.Printf("[error] [%v] executing command: %s", r.Id, err)
 		msg := new(dns.Msg)
 		msg.SetRcode(r, dns.RcodeServerFailure)
 		w.WriteMsg(msg)
 		return
 	}
 
-	if result.TTL == 0 {
-		result.TTL = 300
-	}
-
-	ip := net.ParseIP(result.Value)
-	if ip == nil {
-		log.Printf("[error] failed to parse A record %q", result.Value)
+	err = answers.Validate()
+	if err != nil {
+		log.Printf("[error] [%v] invalid answers: %s", r.Id, err)
 		msg := new(dns.Msg)
 		msg.SetRcode(r, dns.RcodeServerFailure)
 		w.WriteMsg(msg)
 		return
 	}
 
-	a := &dns.A{
-		Hdr: dns.RR_Header{
-			Name:   r.Question[0].Name,
-			Rrtype: dns.TypeA,
-			Class:  dns.ClassINET,
-			Ttl:    result.TTL,
-		},
-		A: ip,
+	for _, answer := range answers {
+		switch answer.Type {
+		case "A":
+			rr := &dns.A{
+				Hdr: dns.RR_Header{
+					Name:   r.Question[0].Name,
+					Rrtype: dns.TypeA,
+					Class:  dns.ClassINET,
+					Ttl:    answer.TTL,
+				},
+				A: answer.IP(),
+			}
+			res.Answer = append(res.Answer, rr)
+		}
 	}
 
-	res.Answer = append(res.Answer, a)
-
-	log.Printf("[%v] ==> %s", r.Id, time.Since(start))
-	log.Printf("[%v] ----> %s\n", r.Id, result)
+	log.Printf("[info] [%v] --> %s %s", r.Id, answers, time.Since(start))
 
 	err = w.WriteMsg(res)
 	if err != nil {
@@ -106,15 +100,38 @@ func (d *Domain) soa() *dns.SOA {
 	}
 }
 
-func (d *Domain) exec() (*result, error) {
-	cmd := exec.Command("sh", "-c", d.Command)
+// Resolve query via command.
+func (d *Domain) resolve(q *dns.Question) (sdns.Answers, error) {
+	stdin := new(bytes.Buffer)
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
 
-	out, err := cmd.Output()
+	query := &sdns.Question{
+		Name:  d.strip(q.Name),
+		Type:  dns.TypeToString[q.Qtype],
+		Class: dns.ClassToString[q.Qclass],
+	}
+
+	err := json.NewEncoder(stdin).Encode(query)
 	if err != nil {
 		return nil, err
 	}
 
-	res := new(result)
-	err = json.Unmarshal(out, res)
-	return res, err
+	cmd := exec.Command("sh", "-c", d.Command)
+	cmd.Stdin = stdin
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("%s: %s", err, stderr.String())
+	}
+
+	var answers sdns.Answers
+	err = json.NewDecoder(stdout).Decode(&answers)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse json: %s", stdout.String())
+	}
+
+	return answers, nil
 }
