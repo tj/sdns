@@ -15,7 +15,7 @@ func (h *RandomUpstream) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 	ns = defaultPort(ns)
 
 	for _, q := range r.Question {
-		log.Printf("[%v] <== %s %s %v (ns %s)\n", r.Id,
+		log.Printf("[info] [%v] <== %s %s %v (ns %s)\n", r.Id,
 			dns.ClassToString[q.Qclass],
 			dns.TypeToString[q.Qtype],
 			q.Name,
@@ -34,9 +34,9 @@ func (h *RandomUpstream) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
 		return
 	}
 
-	log.Printf("[%v] ==> %s:", r.Id, rtt)
+	log.Printf("[info] [%v] ==> %s:", r.Id, rtt)
 	for _, a := range res.Answer {
-		log.Printf("[%v] ----> %s\n", r.Id, a)
+		log.Printf("[info] [%v] ----> %s\n", r.Id, a)
 	}
 
 	err = w.WriteMsg(res)
