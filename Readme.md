@@ -33,7 +33,7 @@ upstream:
 domains:
   - name: foo
     command: |
-      echo '[{ "type": "A", "value": "1.1.1.1", "ttl": 60 }]'
+      echo '[{ "type": "A", "value": "1.1.1.1", "ttl": 60 }, { "type": "A", "value": "1.1.1.4", "ttl": 60 }]'
   - name: bar
     command: |
       echo '[{ "type": "A", "value": "1.1.1.2", "ttl": 60 }]'
@@ -50,6 +50,7 @@ domains:
 ```
 $ dig @127.0.0.1 -p 5000 something.foo +short
 1.1.1.1
+1.1.1.4
 
 $ dig @127.0.0.1 -p 5000 something.bar +short
 1.1.1.2
