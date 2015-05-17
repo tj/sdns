@@ -1,6 +1,8 @@
 
 # sdns
 
+[![GoDoc](https://godoc.org/github.com/tj/sdns?status.svg)](https://godoc.org/github.com/tj/sdns)
+
  Little nameserver resolving via arbitrary command(s).
 
  __Warning__: This is a work-in-progress, you have been warned!
