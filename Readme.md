@@ -31,13 +31,13 @@ upstream:
 domains:
   - name: foo
     command: |
-      echo '{ "type": "A", "value": "1.1.1.1", "ttl": 60 }'
+      echo '[{ "type": "A", "value": "1.1.1.1", "ttl": 60 }]'
   - name: bar
     command: |
-      echo '{ "type": "A", "value": "1.1.1.2", "ttl": 60 }'
+      echo '[{ "type": "A", "value": "1.1.1.2", "ttl": 60 }]'
   - name: foo.bar
     command: |
-      echo '{ "type": "A", "value": "1.1.1.3", "ttl": 300 }'
+      echo '[{ "type": "A", "value": "1.1.1.3", "ttl": 300 }]'
   - name: boom
     command: |
       echo 'something goes boom' && exit 1
