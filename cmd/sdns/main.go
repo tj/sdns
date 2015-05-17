@@ -7,7 +7,7 @@ import "github.com/tj/docopt"
 import "log"
 import "os"
 
-var Version = "0.0.1"
+var Version = "0.1.0"
 
 const Usage = `
   Usage:
